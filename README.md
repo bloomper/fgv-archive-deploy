@@ -10,7 +10,7 @@ Cloudflare is used on staging only. Production uses its own reverse proxy for `W
 ```
 Staging:
 Browser ──https──▶ Cloudflare ──tunnel──▶ cloudflared ─┬─▶ archive-web:3000             (WEB_HOST)
-                                                       └─▶ archive-api:8080             (API_HOST, /docs only)
+                                                       └─▶ archive-api:8080             (API_HOST)
 
 archive-web ──▶ archive-api ──▶ archive-mysql
                 archive-worker ──▶ archive-mysql                 (reads text, renders previews)
@@ -55,33 +55,19 @@ reverse proxy (see *Production*).
 
 1. Create a tunnel (Networking → Tunnels → *Create a tunnel* → Cloudflared), e.g. `fgv-archive-staging`, and copy
    its token.
-2. On the tunnel's **Routes** tab, add a published application for each row below, in this order. `API_HOST` serves
-   only the reference documentation: the API itself is reached through the web on the shared network, and everything
-   else on `API_HOST` answers 404 (the second `API_HOST` route, without a path, catches it).
+2. On the tunnel's **Routes** tab, add a published application for each row below. `API_HOST` serves the whole API
+   (GraphQL under `/api/graphql`, uploads, downloads, share links under `/api/share/*`) and its reference documentation
+   under `/docs`; the web reaches the API on the shared network.
 
-   | Hostname     | Path              | Service URL                |
-   |--------------|-------------------|----------------------------|
-   | `WEB_HOST`   |                   | `http://archive-web:3000`  |
-   | `API_HOST`   | `^/docs(/.*)?$`   | `http://archive-api:8080`  |
-   | `API_HOST`   |                   | `http_status:404`          |
-
-   In a locally managed tunnel's `config.yml` the same is:
-
-   ```yaml
-   ingress:
-     - hostname: archive.example.org          # WEB_HOST
-       service: http://archive-web:3000
-     - hostname: archive-api.example.org      # API_HOST: /docs only
-       path: ^/docs(/.*)?$
-       service: http://archive-api:8080
-     - hostname: archive-api.example.org
-       service: http_status:404
-     - service: http_status:404
-   ```
+   | Hostname     | Service URL                |
+   |--------------|----------------------------|
+   | `WEB_HOST`   | `http://archive-web:3000`  |
+   | `API_HOST`   | `http://archive-api:8080`  |
 
 3. Restrict `WEB_HOST` to testers with Cloudflare Access, as `spexregister-deploy`'s README describes, but leave
    `WEB_HOST/share/*` and `WEB_HOST/api/share/*` open, since share links work without logging in. Leave `API_HOST`
-   unprotected: it serves only `/docs`.
+   unprotected: API clients can't complete an Access login, and the API already requires a Keycloak token, or a share
+   link's token for `/api/share/*`.
 
 Cloudflare's own request logs on staging hold share link addresses with their tokens and cannot be masked; staging's
 share links are sample data or testers' own.
@@ -93,7 +79,7 @@ git clone https://github.com/bloomper/fgv-archive-deploy.git
 cd fgv-archive-deploy
 
 cp staging.env.example .env          # set the hostnames
-bin/init-secrets.sh                  # copies the client secrets from ../fgv-infra-deploy
+bin/init-secrets.sh                  # copies the client secrets from ../../fgv-infra-deploy
 nano secrets/cloudflared.env         # staging only: TUNNEL_TOKEN=<token from step 2>
 nano secrets/SMTP_PASSWORD           # production: the mail relay's password
 mkdir -p data/api/log_data data/worker/log_data data/archive
@@ -104,7 +90,7 @@ docker compose up -d
 | Variable                          | Purpose                                                                      |
 |-----------------------------------|------------------------------------------------------------------------------|
 | `WEB_HOST`                        | Spexarkivet's address; also the links in the emails about access requests    |
-| `API_HOST`                        | Public address of the API's reference documentation; only `/docs` is served there |
+| `API_HOST`                        | Public address of the API: GraphQL, uploads, downloads, share links and `/docs` |
 | `KEYCLOAK_HOST`, `KEYCLOAK_REALM` | Keycloak's public address and realm                                          |
 | `WORKER_CPUS`                     | CPUs the worker may use                                                      |
 | `SMTP_*`, `MAIL_FROM`             | The mail relay for requests for access to restricted files; Mailpit on staging |
@@ -144,26 +130,26 @@ deletes all Keycloak users on every start of its sample import, so restart Spexa
 - `.env` from `production.env.example`: `DEPLOY_ENV=production` (the API then refuses sample data),
   `API_IMPORT_SAMPLE_DATA=false`, and images pinned to release versions.
 - No Cloudflare: `COMPOSE_FILE` leaves out `compose.tunnel.yaml` and needs no `secrets/cloudflared.env`. Production's
-  own reverse proxy terminates TLS and forwards `WEB_HOST` to `archive-web:3000` (tus chunks of up to 50 MB) and only
-  `/docs` on `API_HOST` to `archive-api:8080`, answering 404 to everything else there.
-- The reverse proxy's access logs must not keep share link tokens: a token in `/share/<token>` or
-  `/api/share/<token>/…` (and in a `Referer` naming such a page) opens what the link shares to whoever reads the log.
+  own reverse proxy terminates TLS and forwards `WEB_HOST` to `archive-web:3000` and `API_HOST` to `archive-api:8080` (tus
+  chunks of up to 50 MB on both).
+- The reverse proxy's access logs must not keep share link tokens, on `WEB_HOST` or `API_HOST`: a token in
+  `/share/<token>` or `/api/share/<token>/…` (and in a `Referer` naming such a page) opens what the link shares to
+  whoever reads the log.
   Mask it (see *Share link tokens in access logs*). The web and the API never log tokens themselves.
 - `bin/backup-db.sh` and `bin/backup-files.sh` in cron, with `backups/` copied off the host.
 - Existing material is moved in once with `fgv-archive-migration`.
 
 ## Share link tokens in access logs
 
-Production's reverse proxy writes `WEB_HOST`'s requests to its access log. Replace the token with a placeholder there,
+Production's reverse proxy writes `WEB_HOST`'s and `API_HOST`'s requests to its access log. Replace the token with a placeholder there,
 in the address and in the `Referer` (the share pages send none, but browsers before them might).
 
-Caddy (2.8 or later), with `API_HOST` limited to `/docs`:
+Caddy (2.8 or later):
 
 ```caddyfile
-archive.example.org {
-    reverse_proxy archive-web:3000
+(masked_log) {
     log {
-        output file /var/log/caddy/archive.log
+        output file /var/log/caddy/{args[0]}.log
         format filter {
             request>uri regexp "(/share/)[^/?]+" "${1}REDACTED"
             request>headers>Referer regexp "(/share/)[^/?]+" "${1}REDACTED"
@@ -171,11 +157,20 @@ archive.example.org {
     }
 }
 
-archive-api.example.org {
-    handle /docs* {
-        reverse_proxy archive-api:8080
+archive.example.org {
+    import masked_log archive
+    request_body {
+        max_size 60MB
     }
-    respond 404
+    reverse_proxy archive-web:3000
+}
+
+archive-api.example.org {
+    import masked_log archive-api
+    request_body {
+        max_size 60MB
+    }
+    reverse_proxy archive-api:8080
 }
 ```
 
@@ -204,8 +199,11 @@ server {
 
 server {
     server_name archive-api.example.org;
-    location /docs { proxy_pass http://archive-api:8080; }
-    location / { return 404; }
+    access_log /var/log/nginx/archive-api.log masked;
+    location / {
+        proxy_pass http://archive-api:8080;
+        client_max_body_size 55m;
+    }
 }
 ```
 

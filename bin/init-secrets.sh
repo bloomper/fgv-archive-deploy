@@ -5,8 +5,8 @@ cd "$(dirname "$0")/.."
 umask 077
 mkdir -p secrets
 
-infra_deploy=${INFRA_DEPLOY:-../fgv-infra-deploy}
-spexregister_deploy=${SPEXREGISTER_DEPLOY:-../spexregister-deploy}
+infra_deploy=${INFRA_DEPLOY:-../../fgv-infra-deploy}
+spexregister_deploy=${SPEXREGISTER_DEPLOY:-../../spexregister-deploy}
 
 generate() {
   local name=$1 value=$2
