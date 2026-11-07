@@ -79,13 +79,16 @@ git clone https://github.com/bloomper/fgv-archive-deploy.git
 cd fgv-archive-deploy
 
 cp staging.env.example .env          # set the hostnames
-bin/init-secrets.sh                  # copies the client secrets from ../../fgv-infra-deploy
+bin/init-secrets.sh                  # copies the client secrets from ../fgv-infra-deploy
 nano secrets/cloudflared.env         # staging only: TUNNEL_TOKEN=<token from step 2>
 nano secrets/SMTP_PASSWORD           # production: the mail relay's password
 mkdir -p data/api/log_data data/worker/log_data data/archive
 sudo chown -R 1000:1000 data
 docker compose up -d
 ```
+
+`bin/init-secrets.sh` looks for `fgv-infra-deploy` and `spexregister-deploy` next to this checkout; set `INFRA_DEPLOY`
+and `SPEXREGISTER_DEPLOY` to their paths if they are checked out elsewhere.
 
 | Variable                          | Purpose                                                                      |
 |-----------------------------------|------------------------------------------------------------------------------|
