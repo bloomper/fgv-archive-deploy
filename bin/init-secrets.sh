@@ -5,8 +5,9 @@ cd "$(dirname "$0")/.."
 umask 077
 mkdir -p secrets
 
-infra_deploy=${INFRA_DEPLOY:-../../fgv-infra-deploy}
-spexregister_deploy=${SPEXREGISTER_DEPLOY:-../../spexregister-deploy}
+# Checked out next to this repository, like the other deploy repositories; override for other layouts
+infra_deploy=${INFRA_DEPLOY:-../fgv-infra-deploy}
+spexregister_deploy=${SPEXREGISTER_DEPLOY:-../spexregister-deploy}
 
 generate() {
   local name=$1 value=$2
