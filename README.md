@@ -1,6 +1,6 @@
-# Spexarkivet Deploy
+# Spexarkiv Deploy
 
-Docker Compose setup for running Spexarkivet (API, worker, web and MySQL) on a single host, next to
+Docker Compose setup for running Spexarkiv (API, worker, web and MySQL) on a single host, next to
 [spexregister-deploy][1] and [fgv-infra-deploy][2], which runs Keycloak, the mail relay on staging and the shared
 network `fgv-<DEPLOY_ENV>`.
 
@@ -92,7 +92,7 @@ and `SPEXREGISTER_DEPLOY` to their paths if they are checked out elsewhere.
 
 | Variable                          | Purpose                                                                      |
 |-----------------------------------|------------------------------------------------------------------------------|
-| `WEB_HOST`                        | Spexarkivet's address; also the links in the emails about access requests    |
+| `WEB_HOST`                        | Spexarkiv's address; also the links in the emails about access requests    |
 | `API_HOST`                        | Public address of the API: GraphQL, uploads, downloads, share links and `/docs` |
 | `KEYCLOAK_HOST`, `KEYCLOAK_REALM` | Keycloak's public address and realm                                          |
 | `WORKER_CPUS`                     | CPUs the worker may use                                                      |
@@ -125,7 +125,7 @@ Everything lies under `data/archive/`, mounted into the API and the worker:
 The API creates its tables, copies the spex from Spexregister, and on staging (`API_IMPORT_SAMPLE_DATA=true`) replaces
 all data with sample data built on Spexregister's sample spex, which the worker then reads; see *Sample data* and *Test
 credentials* in `fgv-archive-server`'s getting started guide for the users and the sample share links. Spexregister
-deletes all Keycloak users on every start of its sample import, so restart Spexarkivet after it:
+deletes all Keycloak users on every start of its sample import, so restart Spexarkiv after it:
 `docker compose restart archive-api`.
 
 ## Production
