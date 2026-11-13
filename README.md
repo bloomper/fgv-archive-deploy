@@ -14,7 +14,8 @@ Browser ──https──▶ Cloudflare ──tunnel──▶ cloudflared ─┬
 
 archive-web ──▶ archive-api ──▶ archive-mysql
                 archive-worker ──▶ archive-mysql                 (reads text, renders previews)
-                archive-api ──▶ keycloak-server, spexregister-api, mail relay   (fgv network)
+                archive-api ──▶ keycloak-server, spexipedia-api, mail relay (fgv network)
+                spexipedia-api ──▶ archive-api (spexipediaLinks, /api/sync/notify)   (fgv network)
 ```
 
 - The web goes through the Cloudflare Tunnel like Spexregister. Documents are not media in the sense of Cloudflare's
@@ -45,7 +46,10 @@ archive-web ──▶ archive-api ──▶ archive-mysql
 
 - `fgv-infra-deploy` running with a realm that has the `fgv-archive` and `fgv-archive-service` clients. Its `.env`
   names this deployment's `WEB_HOST` as `ARCHIVE_WEB_HOST`.
-- `spexregister-deploy` running a `spexregister-server` release that accepts `fgv-archive-service` with the `MEDIA` role.
+- `fgv-spexipedia-deploy` running: Spexarkivet copies spex, numbers, characters and instruments from Spexipedia's
+  change feed. Its sample data adds Spexarkivet as a recipient of change notices; in production an admin adds it under
+  *Administration → Mottagare av ändringar* (`fgv-archive-service`, `http://archive-api:8080/api/sync/notify`).
+- `spexregister-deploy` running, for the sample data's users.
 - Disk for the files: the whole archive is expected to stay well below 100 GB.
 
 ## 2. Cloudflare (staging only)
@@ -97,7 +101,8 @@ and `SPEXREGISTER_DEPLOY` to their paths if they are checked out elsewhere.
 | `KEYCLOAK_HOST`, `KEYCLOAK_REALM` | Keycloak's public address and realm                                          |
 | `WORKER_CPUS`                     | CPUs the worker may use                                                      |
 | `SMTP_*`, `MAIL_FROM`             | The mail relay for requests for access to restricted files; Mailpit on staging |
-| `SPEXREGISTER_GRAPHQL_URL`        | Spexregister's GraphQL endpoint on the shared network                        |
+| `SPEXIPEDIA_GRAPHQL_URL`          | Spexipedia's GraphQL endpoint on the shared network: spex and the change feed |
+| `SPEXIPEDIA_WEB_URL`              | Spexipedia's web: editors' *Edit in Spexipedia* for numbers, and the application switcher |
 | `SPEXREGISTER_WEB_URL`, `FGV_REVIVAL_WEB_URL`, `SPEXIFY_WEB_URL`, `SPEXFLIX_WEB_URL`, `SPEXGRAM_WEB_URL` | The other applications, for the application switcher |
 | `API_IMPORT_SAMPLE_DATA`          | `true` on staging only: replaces all data at every start                     |
 | `API_SAMPLE_DATA_SIZE`            | `small` or `large`                                                           |
