@@ -82,6 +82,8 @@ services:
       <<: *api-environment
       API_IMPORT_SAMPLE_DATA: ${API_IMPORT_SAMPLE_DATA:-false}
       API_SAMPLE_DATA_SIZE: ${API_SAMPLE_DATA_SIZE:-small}
+      # The MCP endpoint names itself https://API_HOST/api/mcp, the audience of fgv-archive-mcp's tokens
+      API_BASE_URL: https://${API_HOST:?API_HOST must be set in .env}
     volumes:
       - ./data/api/log_data:/data/log_data
       - ./data/archive:/data/archive
