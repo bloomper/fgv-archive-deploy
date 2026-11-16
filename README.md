@@ -103,7 +103,7 @@ grouped per application; set `INFRA_DEPLOY` to its path if it is elsewhere.
 | `SMTP_*`, `MAIL_FROM`             | The mail relay for requests for access to restricted files; Mailpit on staging |
 | `SPEXIPEDIA_GRAPHQL_URL`          | Spexipedia's GraphQL endpoint on the shared network: spex and the change feed |
 | `SPEXIPEDIA_WEB_URL`              | Spexipedia's web: editors' *Edit in Spexipedia* for numbers, and the application switcher |
-| `SPEXREGISTER_WEB_URL`, `FGV_REVIVAL_WEB_URL`, `SPEXIFY_WEB_URL`, `SPEXFLIX_WEB_URL`, `SPEXGRAM_WEB_URL` | The other applications, for the application switcher |
+| `SPEXREGISTER_WEB_URL`, `REVIVAL_WEB_URL`, `SPEXIFY_WEB_URL`, `SPEXFLIX_WEB_URL`, `SPEXGRAM_WEB_URL` | The other applications, for the application switcher |
 | `API_IMPORT_SAMPLE_DATA`          | `true` on staging only: replaces all data at every start                     |
 | `API_SAMPLE_DATA_SIZE`            | `small` or `large`                                                           |
 | `SUPPORT_EMAIL`, `FEEDBACK_EMAIL` | Shown on the Support and About pages                                         |
