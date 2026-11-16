@@ -49,7 +49,7 @@ archive-web ──▶ archive-api ──▶ archive-mysql
 - `fgv-spexipedia-deploy` running: Spexarkivet copies spex, numbers, characters and instruments from Spexipedia's
   change feed. Its sample data adds Spexarkivet as a recipient of change notices; in production an admin adds it under
   *Administration → Mottagare av ändringar* (`fgv-archive-service`, `http://archive-api:8080/api/sync/notify`).
-- `spexregister-deploy` running, for the sample data's users.
+- `fgv-infra-deploy`'s `bin/seed-users.sh` run, for the sample users and their roles.
 - Disk for the files: the whole archive is expected to stay well below 100 GB.
 
 ## 2. Cloudflare (staging only)
@@ -91,8 +91,8 @@ sudo chown -R 1000:1000 data
 docker compose up -d
 ```
 
-`bin/init-secrets.sh` looks for `fgv-infra-deploy` and `spexregister-deploy` next to this checkout; set `INFRA_DEPLOY`
-and `SPEXREGISTER_DEPLOY` to their paths if they are checked out elsewhere.
+`bin/init-secrets.sh` looks for `fgv-infra-deploy` next to this checkout; set `INFRA_DEPLOY` to its path if it is
+checked out elsewhere.
 
 | Variable                          | Purpose                                                                      |
 |-----------------------------------|------------------------------------------------------------------------------|
@@ -128,10 +128,9 @@ Everything lies under `data/archive/`, mounted into the API and the worker:
 ## First start
 
 The API creates its tables, copies the spex from Spexregister, and on staging (`API_IMPORT_SAMPLE_DATA=true`) replaces
-all data with sample data built on Spexregister's sample spex, which the worker then reads; see *Sample data* and *Test
-credentials* in `fgv-archive-server`'s getting started guide for the users and the sample share links. Spexregister
-deletes all Keycloak users on every start of its sample import, so restart Spexarkiv after it:
-`docker compose restart archive-api`.
+all data with sample data built on Spexipedia's sample spex, which the worker then reads; see *Sample data* and *Test
+credentials* in `fgv-archive-server`'s getting started guide for the users (`fgv-infra-deploy`'s) and the sample share
+links.
 
 ## Production
 
