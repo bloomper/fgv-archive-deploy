@@ -86,7 +86,7 @@ cp staging.env.example .env          # set the hostnames
 bin/init-secrets.sh                  # copies the client secrets from ../fgv-infra-deploy
 nano secrets/cloudflared.env         # staging only: TUNNEL_TOKEN=<token from step 2>
 nano secrets/SMTP_PASSWORD           # production: the mail relay's password
-mkdir -p data/api/log_data data/worker/log_data data/archive
+mkdir -p data/api/log_data data/worker/log_data data/archive data/imports
 sudo chown -R 1000:1000 data
 docker compose up -d
 ```
