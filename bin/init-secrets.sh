@@ -45,6 +45,7 @@ generate MYSQL_USER_PASSWORD "$(random 32)"
 copy_client_secret KEYCLOAK_CLIENT_SECRET fgv-archive
 copy_client_secret KEYCLOAK_SERVICE_CLIENT_SECRET fgv-archive-service
 generate WEB_AUTH_SECRET "$(random 48)"
+generate API_MEDIA_SIGNING_KEY "$(random 48)"
 if [[ ! -e secrets/SMTP_PASSWORD ]]; then
   : > secrets/SMTP_PASSWORD
   echo "created secrets/SMTP_PASSWORD (empty, write the SMTP password into it if the relay needs one)"
