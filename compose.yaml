@@ -53,6 +53,8 @@ x-api: &api
     - source: KEYCLOAK_SERVICE_CLIENT_SECRET
       target: API_KEYCLOAK_SERVICE_CLIENT_SECRET
     - SMTP_PASSWORD
+    # Signs the links to first-page previews that Spexipedia's spex pages show
+    - API_MEDIA_SIGNING_KEY
 
 services:
   archive-mysql:
@@ -182,3 +184,5 @@ secrets:
     file: ./secrets/SMTP_PASSWORD
   WEB_AUTH_SECRET:
     file: ./secrets/WEB_AUTH_SECRET
+  API_MEDIA_SIGNING_KEY:
+    file: ./secrets/API_MEDIA_SIGNING_KEY

@@ -92,7 +92,10 @@ docker compose up -d
 ```
 
 `bin/init-secrets.sh` looks for `fgv-infra-deploy` next to this checkout, or one level further up when the repos are
-grouped per application; set `INFRA_DEPLOY` to its path if it is elsewhere.
+grouped per application; set `INFRA_DEPLOY` to its path if it is elsewhere. It also generates
+`secrets/API_MEDIA_SIGNING_KEY`, which signs the links to first-page previews that Spexipedia's spex pages show
+(under `API_HOST/media/`); without it Spexipedia shows documents without their previews. An existing deployment runs the
+script again to get it.
 
 | Variable                          | Purpose                                                                      |
 |-----------------------------------|------------------------------------------------------------------------------|
